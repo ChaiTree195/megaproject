@@ -1,10 +1,10 @@
 import arcade
 import math
 
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 SCREEN_TITLE = "Телепорт Платформер"
-CAMERA_DECAY = 0.4
 
 GRAVITY = 0.7
 DASH_SPEED = 20
@@ -16,74 +16,35 @@ COYOTE_TIME = 0.12
 JUMP_BUFFER_TIME = 0.12
 
 
-def lerp(a: float, b: float, t: float) -> float:
-    return a + (b - a) * t
-
-
-level_data = [
-    {
-        'platforms': [
-            (640, 50, 1280, 100),
-            (300, 150, 200, 32),
-            (900, 250, 200, 32),
-        ],
-        'goal': (1100, 280)
-    },
-    {
-        'platforms': [
-            (640, 50, 1280, 100),
-            (200, 200, 150, 32), (500, 300, 150, 32), (900, 200, 150, 32), (1200, 350, 150, 32),
-        ],
-        'goal': (1250, 380)
-    },
-    {
-        'platforms': [
-            (640, 50, 1280, 100),
-            (100, 400, 150, 32), (400, 250, 150, 32), (800, 450, 150, 32), (1100, 300, 150, 32),
-        ],
-        'goal': (80, 430)
-    },
-    {
-        'platforms': [
-            (640, 50, 1280, 100),
-            (150, 120, 120, 32), (350, 220, 120, 32), (550, 150, 120, 32),
-            (750, 300, 120, 32), (950, 200, 120, 32), (1150, 400, 120, 32),
-        ],
-        'goal': (1200, 430)
-    }
-]
-
-
 class Player(arcade.Sprite):
     def __init__(self):
-        super().__init__(":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png", scale=0.5)
+        super().__init__(
+            ":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png",
+            scale=0.5
+        )
         self.score = 0
 
 
 class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-        arcade.set_background_color(arcade.color.SKY_BLUE)
-
-        self.camera = arcade.Camera2D()
-        self.gui_camera = arcade.Camera2D()
+        arcade.set_background_color(arcade.color.EERIE_BLACK)
 
         self.player_list = arcade.SpriteList()
         self.platforms = arcade.SpriteList()
+        self.death_list = arcade.SpriteList()
+        self.bkg_list = arcade.SpriteList()
+        self.bkg2_list = arcade.SpriteList()
         self.goal_list = arcade.SpriteList()
 
         self.player = Player()
-        self.player.center_x = 100
-        self.player.center_y = 100
         self.player_list.append(self.player)
 
         self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
-        self.current_level = 0
 
-        self.dash_cooldown = 0.0
         self.dash_remaining_time = 0.0
         self.can_dash = True
         self.was_on_ground = False
@@ -94,7 +55,9 @@ class MyGame(arcade.Window):
         self.coyote_time_left = 0.0
         self.jump_buffer_time = 0.0
 
-        self.load_level()
+        self.tile_map = None
+
+        self.load_level("levelstart.tmx")
 
         self.score_text = None
         self.update_score()
@@ -117,25 +80,32 @@ class MyGame(arcade.Window):
 
         return dx / length, dy / length
 
-    def load_level(self):
-        data = level_data[self.current_level]
+    def load_level(self, tmx_file="levelstart.tmx"):
+        self.tile_map = arcade.load_tilemap(tmx_file, scaling=1)
 
-        self.platforms.clear()
+        self.platforms = self.tile_map.sprite_lists.get("WALLS", arcade.SpriteList())
+        self.death_list = self.tile_map.sprite_lists.get("DEATH", arcade.SpriteList())
+        self.bkg_list = self.tile_map.sprite_lists.get("BKG", arcade.SpriteList())
+        self.bkg2_list = self.tile_map.sprite_lists.get("BKG2", arcade.SpriteList())
 
-        for cx, cy, w, h in data['platforms']:
-            plat = arcade.Sprite(":resources:images/tiles/boxCrate_double.png")
-            plat.center_x = cx
-            plat.center_y = cy
-            plat.width = w
-            plat.height = h
-            self.platforms.append(plat)
-
-        gx, gy = data['goal']
-        self.goal = arcade.Sprite(":resources:images/items/star.png", scale=0.5)
-        self.goal.center_x = gx
-        self.goal.center_y = gy
         self.goal_list.clear()
-        self.goal_list.append(self.goal)
+        if "GOAL" in self.tile_map.object_lists:
+            goal_obj = self.tile_map.object_lists["GOAL"][0]
+            self.goal = arcade.Sprite(":resources:images/items/star.png", scale=0.3)
+            self.goal.center_x = goal_obj.x + goal_obj.width / 2
+            self.goal.center_y = goal_obj.y + goal_obj.height / 2
+            self.goal_list.append(self.goal)
+
+        # Спавн
+        tw = self.tile_map.tile_width
+        th = self.tile_map.tile_height
+        map_height_px = self.tile_map.height * th
+
+        tile_x = 10
+        tile_y = 4
+
+        self.player.center_x = tile_x * tw + tw / 2
+        self.player.center_y = map_height_px - (tile_y * th + th / 2)
 
         for plat in self.platforms:
             plat.friction = 1.2
@@ -145,46 +115,46 @@ class MyGame(arcade.Window):
             self.player, self.platforms, GRAVITY
         )
 
-    def next_level(self):
-        px, py = self.player.position
+        self.center_world()
 
-        self.current_level = (self.current_level + 1) % len(level_data)
-        self.load_level()
+    def center_world(self):
+        map_width = self.tile_map.width * self.tile_map.tile_width
+        map_height = self.tile_map.height * self.tile_map.tile_height
 
-        self.player.center_x = px
-        self.player.center_y = py
-        self.player.change_x = 0
-        self.player.change_y = 0
+        offset_x = (SCREEN_WIDTH - map_width) / 2
+        offset_y = (SCREEN_HEIGHT - map_height) / 2
 
-        self.can_dash = True
-        self.was_on_ground = self.physics_engine.can_jump()
+        for sprite_list in [
+            self.platforms,
+            self.death_list,
+            self.bkg_list,
+            self.bkg2_list,
+            self.goal_list,
+        ]:
+            for spr in sprite_list:
+                spr.center_x += offset_x
+                spr.center_y += offset_y
 
-        self.physics_engine = arcade.PhysicsEnginePlatformer(
-            self.player, self.platforms, GRAVITY
-        )
-
-        self.jump_hold_pressed = False
-        self.coyote_time_left = COYOTE_TIME if self.physics_engine.can_jump() else 0
-        self.jump_buffer_time = 0
-
-        self.player.score += 1
-        self.update_score()
+        self.player.center_x += offset_x
+        self.player.center_y += offset_y
 
     def update_score(self):
         self.score_text = arcade.Text(
-            f"Уровни пройдено: {self.player.score}", 10, SCREEN_HEIGHT - 30,
-            arcade.color.WHITE, 24
+            f"Уровни пройдено: {self.player.score}",
+            10,
+            SCREEN_HEIGHT - 30,
+            arcade.color.WHITE,
+            24
         )
 
     def on_draw(self):
         self.clear()
-
-        self.camera.activate()
+        self.bkg2_list.draw()
+        self.bkg_list.draw()
         self.platforms.draw()
+        self.death_list.draw()
         self.player_list.draw()
         self.goal_list.draw()
-
-        self.gui_camera.activate()
         self.score_text.draw()
 
     def on_update(self, delta_time):
@@ -221,31 +191,16 @@ class MyGame(arcade.Window):
             self.jump_buffer_time = 0
             self.coyote_time_left = 0
 
-        if arcade.check_for_collision(self.player, self.goal):
-            self.next_level()
-
-        self.update_camera()
-
-    def update_camera(self):
-        camera_target_x = self.player.center_x - (SCREEN_WIDTH / 2)
-        camera_target_y = self.player.center_y - (SCREEN_HEIGHT / 2)
-
-        current_pos = self.camera.position
-
-        new_x = lerp(current_pos[0], camera_target_x, CAMERA_DECAY)
-        new_y = lerp(current_pos[1], camera_target_y, CAMERA_DECAY)
-        self.camera.position = new_x, new_y
-
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.W or key == arcade.key.UP:
+        if key in (arcade.key.W, arcade.key.UP):
             self.up_pressed = True
             self.jump_hold_pressed = True
             self.jump_buffer_time = JUMP_BUFFER_TIME
-        elif key == arcade.key.S or key == arcade.key.DOWN:
+        elif key in (arcade.key.S, arcade.key.DOWN):
             self.down_pressed = True
-        elif key == arcade.key.A or key == arcade.key.LEFT:
+        elif key in (arcade.key.A, arcade.key.LEFT):
             self.left_pressed = True
-        elif key == arcade.key.D or key == arcade.key.RIGHT:
+        elif key in (arcade.key.D, arcade.key.RIGHT):
             self.right_pressed = True
         elif key == arcade.key.Z:
             direction = self.get_dash_direction()
@@ -255,14 +210,14 @@ class MyGame(arcade.Window):
                 self.can_dash = False
 
     def on_key_release(self, key, modifiers):
-        if key == arcade.key.W or key == arcade.key.UP:
+        if key in (arcade.key.W, arcade.key.UP):
             self.up_pressed = False
             self.jump_hold_pressed = False
-        elif key == arcade.key.S or key == arcade.key.DOWN:
+        elif key in (arcade.key.S, arcade.key.DOWN):
             self.down_pressed = False
-        elif key == arcade.key.A or key == arcade.key.LEFT:
+        elif key in (arcade.key.A, arcade.key.LEFT):
             self.left_pressed = False
-        elif key == arcade.key.D or key == arcade.key.RIGHT:
+        elif key in (arcade.key.D, arcade.key.RIGHT):
             self.right_pressed = False
 
 
