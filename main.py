@@ -123,7 +123,7 @@ class MyGame(arcade.Window):
         self.update_score()
 
     def load_level(self):
-        "Загрузка уровня."
+        """Загрузка уровня."""
 
         if self.current_level == 1:
             tmx_file = "levelstart.tmx"
@@ -131,6 +131,7 @@ class MyGame(arcade.Window):
             tmx_file = f"level{self.current_level}.tmx"
 
         self.tile_map = arcade.load_tilemap(tmx_file, scaling=1)
+
         self.platforms = self.tile_map.sprite_lists.get("WALLS", arcade.SpriteList())
         self.death_list = self.tile_map.sprite_lists.get("DEATH", arcade.SpriteList())
         self.bkg_list = self.tile_map.sprite_lists.get("BKG", arcade.SpriteList())
