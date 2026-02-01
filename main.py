@@ -108,7 +108,7 @@ class MyGame(arcade.Window):
         self.fade_duration = 0.5
         self.level_transition = False
         self.respawn_needed = False
-        self.timer = 100.0
+        self.timer = 10.0
         self.timer_text = None
         self.score_text = None
         self.load_level()
@@ -172,7 +172,7 @@ class MyGame(arcade.Window):
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player, self.platforms, self.gravity_scaled
         )
-        self.timer = 10.0
+        self.timer = 1000.0
         self.timer_text = arcade.Text(
             f"Время: {int(self.timer)}",
             SCREEN_WIDTH // 2 - 100,
