@@ -84,6 +84,14 @@ class MyGame(arcade.Window):
         self.jump_sound = arcade.Sound(":resources:sounds/jump3.wav")
         self.coin_sound = arcade.Sound(":resources:sounds/coin1.wav")
 
+        try:
+            self.background_music = arcade.load_sound("sounds/sound_track.m4a")
+            self.music_playing = False
+        except Exception as e:
+            print(f"Не удалось загрузить фоновую музыку: {e}")
+            self.background_music = None
+            self.music_playing = False
+
         self.background = arcade.load_texture("background.png")
         self.player_list = arcade.SpriteList()
         self.platforms = arcade.SpriteList()
@@ -130,6 +138,17 @@ class MyGame(arcade.Window):
         else:
             tmx_file = f"level{self.current_level}.tmx"
 
+        # ✅ ДОБАВЬТЕ ЭТУ ПРОВЕРКУ:
+        if tmx_file is None:
+            print("⚠ Ошибка: tmx_file is None, устанавливаю levelstart.tmx")
+            tmx_file = "levelstart.tmx"
+
+        # ✅ И ЭТУ ПРОВЕРКУ:
+        import os
+        if not os.path.exists(tmx_file):
+            print(f"⚠ Файл {tmx_file} не найден, использую levelstart.tmx")
+            tmx_file = "levelstart.tmx"
+
         self.tile_map = arcade.load_tilemap(tmx_file, scaling=1)
 
         self.platforms = self.tile_map.sprite_lists.get("WALLS", arcade.SpriteList())
@@ -138,6 +157,7 @@ class MyGame(arcade.Window):
         self.bkg2_list = self.tile_map.sprite_lists.get("BKG2", arcade.SpriteList())
         self.goal_list = self.tile_map.sprite_lists.get("GOAL", arcade.SpriteList())
         self.spawn_list = self.tile_map.sprite_lists.get("SPAWN", arcade.SpriteList())
+
         tw = self.tile_map.tile_width
         th = self.tile_map.tile_height
         map_width_px = self.tile_map.width * tw
