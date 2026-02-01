@@ -4,7 +4,7 @@ import sqlite3
 class GameDatabase:
     """Менеджер игровых сессий"""
 
-    def __init__(self, db_name='game.db'):
+    def __init__(self, db_name="game.db"):
         self.db_name = db_name
         self._init_db()
 

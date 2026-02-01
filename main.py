@@ -79,7 +79,7 @@ class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
-        self.game_database = GameDatabase('game_database.db')
+        self.game_database = GameDatabase("game_database.db")
 
         self.background = arcade.load_texture("background.png")
         self.player_list = arcade.SpriteList()
