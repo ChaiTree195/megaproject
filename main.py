@@ -184,7 +184,7 @@ class MyGame(arcade.Window):
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player, self.platforms, self.gravity_scaled
         )
-        self.timer = 1000.0
+        self.timer = 10.0
         self.timer_text = arcade.Text(
             f"Время: {int(self.timer)}",
             SCREEN_WIDTH // 2 - 100,

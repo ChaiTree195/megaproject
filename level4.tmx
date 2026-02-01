@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="15" height="15" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="1">
  <tileset firstgid="1" source="VETOTRAZTOCHNO.tsx"/>
- <tileset firstgid="65" source="../../Desktop/vetorraztochno/aaaa.tsx"/>
  <layer id="5" name="BKG2" width="15" height="15">
   <data encoding="csv">
 33,26,27,34,25,35,33,27,26,26,25,33,33,34,27,
@@ -47,7 +46,7 @@
 0,4,18,18,18,18,18,5,4,18,18,18,18,18,5,
 0,11,0,0,0,0,0,9,11,0,0,0,0,0,9,
 0,11,0,0,0,0,0,9,11,0,0,0,0,0,9,
-0,76,66,66,66,0,0,9,11,0,0,0,0,0,9,
+0,11,20,20,20,0,0,9,11,0,0,0,0,0,9,
 0,11,0,0,0,0,0,9,12,2,2,0,0,0,9,
 0,11,0,0,0,0,0,9,11,0,0,0,0,0,9,
 0,11,0,0,0,0,0,9,11,0,0,0,0,0,9,
