@@ -307,7 +307,7 @@ class MyGame(arcade.Window):
             if not self.fading_out and not self.level_transition:
                 self.player.score += 1
                 self.current_level += 1
-                if self.current_level > 15:
+                if self.current_level > 25:
                     self.close()
                 else:
                     self.level_transition = True
