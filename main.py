@@ -80,6 +80,9 @@ class MyGame(arcade.Window):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
         self.game_database = GameDatabase("game_database.db")
+        # Используем встроенные звуки arcade
+        self.jump_sound = arcade.Sound(":resources:sounds/jump3.wav")
+        self.coin_sound = arcade.Sound(":resources:sounds/coin1.wav")
 
         self.background = arcade.load_texture("background.png")
         self.player_list = arcade.SpriteList()
@@ -337,6 +340,10 @@ class MyGame(arcade.Window):
             self.up_pressed = True
             self.jump_hold_pressed = True
             self.jump_buffer_time = JUMP_BUFFER_TIME
+
+            # Звук прыжка
+            arcade.play_sound(self.jump_sound)
+
         elif key in (arcade.key.S, arcade.key.DOWN):
             self.down_pressed = True
         elif key in (arcade.key.A, arcade.key.LEFT):
