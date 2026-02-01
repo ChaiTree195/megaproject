@@ -1,6 +1,8 @@
 import arcade
 from PIL import Image
 
+from database import GameDatabase
+
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = "KORObKA"
@@ -76,6 +78,9 @@ class Player(arcade.AnimatedWalkingSprite):
 class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+
+        self.game_database = GameDatabase('game_database')
+
         self.background = arcade.load_texture("background.png")
         self.player_list = arcade.SpriteList()
         self.platforms = arcade.SpriteList()
@@ -115,10 +120,13 @@ class MyGame(arcade.Window):
         self.update_score()
 
     def load_level(self):
+        "Загрузка уровня."
+
         if self.current_level == 1:
             tmx_file = "levelstart.tmx"
         else:
             tmx_file = f"level{self.current_level}.tmx"
+
         self.tile_map = arcade.load_tilemap(tmx_file, scaling=1)
         self.platforms = self.tile_map.sprite_lists.get("WALLS", arcade.SpriteList())
         self.death_list = self.tile_map.sprite_lists.get("DEATH", arcade.SpriteList())
@@ -306,6 +314,9 @@ class MyGame(arcade.Window):
         if arcade.check_for_collision_with_list(self.player, self.goal_list):
             if not self.fading_out and not self.level_transition:
                 self.player.score += 1
+
+                self.game_database.save_level(self.current_level)
+
                 self.current_level += 1
                 if self.current_level > 25:
                     self.close()
@@ -313,6 +324,7 @@ class MyGame(arcade.Window):
                     self.level_transition = True
                     self.fading_out = True
                     self.fade_time = 0.0
+
         if arcade.check_for_collision_with_list(self.player, self.death_list):
             if not self.fading_out and not self.respawn_needed:
                 self.respawn_needed = True
