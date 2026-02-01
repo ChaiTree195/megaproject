@@ -85,8 +85,14 @@ class MyGame(arcade.Window):
         self.coin_sound = arcade.Sound(":resources:sounds/coin1.wav")
 
         # музыка
-        self.background_music = arcade.Sound(":resources:music/funkyrobot.mp3")
-        self.background_music.play(loop=True)
+        try:
+            self.background_music = arcade.load_sound("sounds/sound_track.m4a")
+            self.background_music.play(volume=0.3, loop=True)
+            print("Фоновая музыка запущена")
+        except:
+            print("Не удалось загрузить фоновую музыку, загружаем встроенную")
+            self.background_music = arcade.Sound(":resources:music/funkyrobot.mp3")
+            self.background_music.play(loop=True)
 
         self.background = arcade.load_texture("background.png")
         self.player_list = arcade.SpriteList()
