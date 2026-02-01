@@ -80,17 +80,14 @@ class MyGame(arcade.Window):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
         self.game_database = GameDatabase("game_database.db")
-        # Используем встроенные звуки arcade
+
         self.jump_sound = arcade.Sound(":resources:sounds/jump3.wav")
         self.coin_sound = arcade.Sound(":resources:sounds/coin1.wav")
 
-        # музыка
         try:
             self.background_music = arcade.load_sound("sounds/sound_track.m4a")
             self.background_music.play(volume=0.3, loop=True)
-            print("Фоновая музыка запущена")
         except:
-            print("Не удалось загрузить фоновую музыку, загружаем встроенную")
             self.background_music = arcade.Sound(":resources:music/funkyrobot.mp3")
             self.background_music.play(loop=True)
 
