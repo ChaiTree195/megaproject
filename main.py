@@ -84,6 +84,10 @@ class MyGame(arcade.Window):
         self.jump_sound = arcade.Sound(":resources:sounds/jump3.wav")
         self.coin_sound = arcade.Sound(":resources:sounds/coin1.wav")
 
+        # музыка
+        self.background_music = arcade.Sound(":resources:music/funkyrobot.mp3")
+        self.background_music.play(loop=True)
+
         self.background = arcade.load_texture("background.png")
         self.player_list = arcade.SpriteList()
         self.platforms = arcade.SpriteList()
